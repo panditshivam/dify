@@ -2992,7 +2992,7 @@
   },
   "web/app/components/workflow/panel/debug-and-preview/__tests__/hooks/handle-resume.spec.ts": {
     "typescript/no-explicit-any": {
-      "count": 25
+      "count": 20
     }
   },
   "web/app/components/workflow/panel/debug-and-preview/__tests__/hooks/misc.spec.ts": {
