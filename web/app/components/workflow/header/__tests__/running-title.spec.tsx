@@ -2,19 +2,13 @@ import { renderWorkflowComponent } from '../../__tests__/workflow-test-env'
 import RunningTitle from '../running-title'
 
 let mockIsChatMode = false
-const mockFormatWorkflowRunIdentifier = vi.fn()
 
 vi.mock('../../hooks/use-workflow', () => ({}))
-
-vi.mock('../../utils', () => ({
-  formatWorkflowRunIdentifier: (finishedAt?: number) => mockFormatWorkflowRunIdentifier(finishedAt),
-}))
 
 describe('RunningTitle', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockIsChatMode = false
-    mockFormatWorkflowRunIdentifier.mockReturnValue(' (14:30:25)')
   })
 
   it('should render the test run title in workflow mode', () => {
@@ -28,8 +22,7 @@ describe('RunningTitle', () => {
       },
     })
 
-    expect(mockFormatWorkflowRunIdentifier).toHaveBeenCalledWith(1_700_000_000)
-    expect(container).toHaveTextContent('Test Run (14:30:25)')
+    expect(container.textContent).toMatch(/Test Run \(\d{2}:\d{2}:\d{2}( [AP]M)?\)/)
     expect(container).toHaveTextContent('workflow.common.viewOnly')
   })
 
@@ -46,15 +39,28 @@ describe('RunningTitle', () => {
       },
     })
 
-    expect(mockFormatWorkflowRunIdentifier).toHaveBeenCalledWith(undefined)
-    expect(container).toHaveTextContent('Test Chat (14:30:25)')
+    expect(container).toHaveTextContent('Test Chat (Running)')
+  })
+
+  it.each([false, true])('renders paused history with chat mode %s', (isChatMode) => {
+    mockIsChatMode = isChatMode
+
+    const { container } = renderWorkflowComponent(<RunningTitle />, {
+      initialStoreState: {
+        historyWorkflowData: {
+          id: 'history-paused',
+          status: 'paused',
+        },
+      },
+    })
+
+    expect(container).toHaveTextContent(`Test ${isChatMode ? 'Chat' : 'Run'} (Paused)`)
   })
 
   it('should handle missing workflow history data', () => {
     const { container } = renderWorkflowComponent(<RunningTitle />)
 
-    expect(mockFormatWorkflowRunIdentifier).toHaveBeenCalledWith(undefined)
-    expect(container).toHaveTextContent('Test Run (14:30:25)')
+    expect(container).toHaveTextContent('Test Run (Running)')
   })
 })
 
