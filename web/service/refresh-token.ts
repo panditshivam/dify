@@ -1,6 +1,7 @@
 import Cookies from 'js-cookie'
 import { API_PREFIX, CSRF_COOKIE_NAME, CSRF_HEADER_NAME } from '@/config'
 import { isClient } from '@/utils/client'
+import { httpErrorFromResponse, isHttpErrorStatus } from './http-error'
 import {
   getRefreshRequestId,
   REFRESH_REQUEST_ID_HEADER,
@@ -31,7 +32,7 @@ async function getNewAccessToken(): Promise<void> {
         signal,
       }),
     )
-    if (!response.ok) throw response
+    if (isHttpErrorStatus(response.status)) throw await httpErrorFromResponse(response)
   }
 
   if (navigator.locks) await navigator.locks.request(REFRESH_KEY, refresh)

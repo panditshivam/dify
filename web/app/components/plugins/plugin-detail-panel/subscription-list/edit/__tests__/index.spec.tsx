@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { PluginDetail } from '@/app/components/plugins/types'
 import type { TriggerSubscription } from '@/app/components/workflow/block-selector/types'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
@@ -122,6 +123,7 @@ vi.mock('@/app/components/plugins/readme-panel/entrance', () => ({
 
 vi.mock('@/app/components/base/encrypted-bottom', () => ({
   EncryptedBottom: () => <div data-testid="encrypted-bottom">EncryptedBottom</div>,
+  EncryptedFooter: ({ children }: { children: ReactNode }) => <>{children}</>,
 }))
 
 // Form values storage keyed by form identifier
@@ -328,7 +330,7 @@ describe('Edit Modal Components', () => {
           subscription={createSubscription({ credential_type: type })}
         />,
       )
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
 
     it('should render nothing for unknown credential type', () => {
@@ -577,11 +579,9 @@ describe('Edit Modal Components', () => {
         })
       })
 
-      it('should use error.message from object when available', async () => {
+      it('should use error.message when available', async () => {
         formValuesMap.set('main', { values: { subscription_name: 'Name' }, isCheckValidated: true })
-        mockUpdateSubscription.mockImplementation((_p, cb) =>
-          cb.onError({ message: 'Object error' }),
-        )
+        mockUpdateSubscription.mockImplementation((_p, cb) => cb.onError(new Error('Object error')))
         render(<ManualEditModal {...createProps()} />)
         fireEvent.click(getConfirmButton())
         await waitFor(() => {
@@ -1005,7 +1005,6 @@ describe('Edit Modal Components', () => {
 
       it('should render EncryptedBottom in credentials step', () => {
         render(<ApiKeyEditModal {...createProps()} />)
-        expect(screen.getByTestId('modal-bottom-slot')).toBeInTheDocument()
         expect(screen.getByTestId('encrypted-bottom')).toBeInTheDocument()
       })
 
@@ -1099,7 +1098,7 @@ describe('Edit Modal Components', () => {
 
       it('should show error toast on verification failure', async () => {
         formValuesMap.set('credentials', { values: { api_key: 'bad-key' }, isCheckValidated: true })
-        mockParsePluginErrorMessage.mockResolvedValue('Invalid API key')
+        mockParsePluginErrorMessage.mockReturnValue('Invalid API key')
         mockVerifyCredentials.mockImplementation((_p, cb) => cb.onError(new Error('Invalid')))
         render(<ApiKeyEditModal {...createProps()} />)
         fireEvent.click(getConfirmButton())
@@ -1115,7 +1114,7 @@ describe('Edit Modal Components', () => {
 
       it('should use fallback error message when parsePluginErrorMessage returns null', async () => {
         formValuesMap.set('credentials', { values: { api_key: 'bad-key' }, isCheckValidated: true })
-        mockParsePluginErrorMessage.mockResolvedValue(null)
+        mockParsePluginErrorMessage.mockReturnValue(null)
         mockVerifyCredentials.mockImplementation((_p, cb) => cb.onError(new Error('Invalid')))
         render(<ApiKeyEditModal {...createProps()} />)
         fireEvent.click(getConfirmButton())
@@ -1184,7 +1183,7 @@ describe('Edit Modal Components', () => {
         render(<ApiKeyEditModal {...createProps()} />)
         fireEvent.click(getConfirmButton())
         await waitFor(() => {
-          expect(screen.queryByTestId('modal-bottom-slot')).not.toBeInTheDocument()
+          expect(screen.queryByTestId('encrypted-bottom')).not.toBeInTheDocument()
         })
       })
 
@@ -1326,7 +1325,7 @@ describe('Edit Modal Components', () => {
           values: { subscription_name: 'Name' },
           isCheckValidated: true,
         })
-        mockParsePluginErrorMessage.mockResolvedValue('Update failed')
+        mockParsePluginErrorMessage.mockReturnValue('Update failed')
         mockUpdateSubscription.mockImplementation((_p, cb) => cb.onError(new Error('Failed')))
         render(<ApiKeyEditModal {...createProps()} />)
 
@@ -1602,7 +1601,7 @@ describe('Edit Modal Components', () => {
         mockPluginStoreDetail.declaration.trigger.subscription_constructor.credentials_schema = []
         render(<ApiKeyEditModal {...createProps()} />)
         // Should still show the modal but no credentials form fields
-        expect(screen.getByTestId('modal')).toBeInTheDocument()
+        expect(screen.getByRole('dialog')).toBeInTheDocument()
       })
     })
 

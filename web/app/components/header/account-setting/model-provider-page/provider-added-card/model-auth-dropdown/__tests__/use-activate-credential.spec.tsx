@@ -3,16 +3,27 @@ import { act, renderHook } from '@testing-library/react'
 import { toast } from '@/app/notifications'
 import { useActivateCredential } from '../use-activate-credential'
 
-const mockMutate = vi.fn()
+const mockMutate =
+  vi.fn<(_variables: unknown, callbacks: { onSuccess: () => void; onError: () => void }) => void>()
 const mockUpdateModelProviders = vi.fn()
 const mockUpdateModelList = vi.fn()
 let mockIsPending = false
 
-vi.mock('@/service/use-models', () => ({
-  useActiveProviderCredential: () => ({
-    mutate: mockMutate,
-    isPending: mockIsPending,
-  }),
+vi.mock('@/service/console', () => ({
+  consoleQuery: {
+    workspaces: {
+      current: {
+        modelProviders: {
+          byProvider: { credentials: { switch: { post: { mutationOptions: () => ({}) } } } },
+        },
+      },
+    },
+  },
+}))
+
+vi.mock('@tanstack/react-query', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@tanstack/react-query')>()),
+  useMutation: () => ({ mutate: mockMutate, isPending: mockIsPending }),
 }))
 
 vi.mock('../../../hooks', () => ({
@@ -85,14 +96,14 @@ describe('useActivateCredential', () => {
 
     expect(result.current.selectedCredentialId).toBe('cred-2')
     expect(mockMutate).toHaveBeenCalledWith(
-      { credential_id: 'cred-2' },
+      { params: { provider: 'langgenius/openai/openai' }, body: { credential_id: 'cred-2' } },
       expect.objectContaining({
         onSuccess: expect.any(Function),
         onError: expect.any(Function),
       }),
     )
 
-    const [, callbacks] = (mockMutate.mock.calls[0] ?? []) as [unknown, any]
+    const [, callbacks] = mockMutate.mock.calls[0]!
 
     act(() => {
       callbacks.onSuccess()
@@ -112,7 +123,7 @@ describe('useActivateCredential', () => {
 
     expect(result.current.selectedCredentialId).toBe('cred-2')
 
-    const [, callbacks] = (mockMutate.mock.calls[0] ?? []) as [unknown, any]
+    const [, callbacks] = mockMutate.mock.calls[0]!
 
     act(() => {
       callbacks.onError()

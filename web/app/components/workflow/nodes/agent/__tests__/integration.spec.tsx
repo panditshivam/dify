@@ -3,6 +3,7 @@ import type {
   GetWorkspacesCurrentModelsModelTypesByModelTypeData,
 } from '@dify/contracts/api/console/workspaces/types.gen'
 import type { OperationKey } from '@orpc/tanstack-query'
+import type { ComponentProps } from 'react'
 import type { AgentNodeType } from '../types'
 import type { PanelProps } from '@/types/workflow'
 import { zAgentStrategyParameter } from '@dify/contracts/api/console/workspaces/zod.gen'
@@ -35,16 +36,49 @@ let mockTextEmbeddingModels:
   | undefined = []
 let mockTtsModels: Array<{ provider: string; models: Array<{ model: string }> }> | undefined = []
 
-let mockBuiltInTools: Array<any> | undefined = []
-let mockCustomTools: Array<any> | undefined = []
-let mockWorkflowTools: Array<any> | undefined = []
-let mockMcpTools: Array<any> | undefined = []
+let mockBuiltInTools:
+  | Array<{
+      id?: string
+      name?: string
+      is_team_authorization: boolean
+      icon: string | { content: string; background: string }
+    }>
+  | undefined = []
+let mockCustomTools:
+  | Array<{
+      id?: string
+      name?: string
+      is_team_authorization: boolean
+      icon: string | { content: string; background: string }
+    }>
+  | undefined = []
+let mockWorkflowTools:
+  | Array<{
+      id?: string
+      name?: string
+      is_team_authorization: boolean
+      icon: string | { content: string; background: string }
+    }>
+  | undefined = []
+let mockMcpTools:
+  | Array<{
+      id?: string
+      name?: string
+      is_team_authorization: boolean
+      icon: string | { content: string; background: string }
+    }>
+  | undefined = []
 let mockMarketplaceIcon: string | Record<string, string> | undefined
 
 const mockResetEditor = vi.fn()
 
 vi.mock('@/app/components/header/account-setting/model-provider-page/model-selector', () => ({
-  ModelSelector: ({ value, models }: any) => (
+  ModelSelector: ({
+    value,
+    models,
+  }: ComponentProps<
+    typeof import('@/app/components/header/account-setting/model-provider-page/model-selector').ModelSelector
+  >) => (
     <div>
       {value ? `${value.provider}/${value.model}` : 'no-model'}:{models.length}
     </div>
@@ -52,18 +86,11 @@ vi.mock('@/app/components/header/account-setting/model-provider-page/model-selec
 }))
 
 vi.mock('@langgenius/dify-ui/status-dot', () => ({
-  StatusDot: ({ status }: any) => <div>{`indicator:${status}`}</div>,
-}))
-
-vi.mock('@/service/use-tools', () => ({
-  useAllBuiltInTools: () => ({ data: mockBuiltInTools }),
-  useAllCustomTools: () => ({ data: mockCustomTools }),
-  useAllWorkflowTools: () => ({ data: mockWorkflowTools }),
-  useAllMCPTools: () => ({ data: mockMcpTools }),
-}))
-
-vi.mock('@/app/components/base/app-icon', () => ({
-  default: ({ icon, background }: any) => <div>{`app-icon:${background}:${icon}`}</div>,
+  StatusDot: ({
+    status,
+  }: ComponentProps<typeof import('@langgenius/dify-ui/status-dot').StatusDot>) => (
+    <div>{`indicator:${status}`}</div>
+  ),
 }))
 
 vi.mock('@/utils/get-icon', () => ({
@@ -75,17 +102,34 @@ vi.mock('@/hooks/use-i18n', () => ({
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/group', () => ({
-  Group: ({ label, children }: any) => (
+  Group: ({
+    label,
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/group').Group
+  >) => (
     <div>
       <div>{label}</div>
       {children}
     </div>
   ),
-  GroupLabel: ({ className, children }: any) => <div className={className}>{children}</div>,
+  GroupLabel: ({
+    className,
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/group').GroupLabel
+  >) => <div className={className}>{children}</div>,
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/setting-item', () => ({
-  SettingItem: ({ label, status, tooltip, children }: any) => (
+  SettingItem: ({
+    label,
+    status,
+    tooltip,
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/setting-item').SettingItem
+  >) => (
     <div>
       {label}:{status}:{tooltip}:{children}
     </div>
@@ -93,7 +137,12 @@ vi.mock('@/app/components/workflow/nodes/_base/components/setting-item', () => (
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/field', () => ({
-  default: ({ title, children }: any) => (
+  default: ({
+    title,
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/field').default
+  >) => (
     <div>
       <div>{title}</div>
       {children}
@@ -102,7 +151,11 @@ vi.mock('@/app/components/workflow/nodes/_base/components/field', () => ({
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/agent-strategy', () => ({
-  AgentStrategy: ({ onStrategyChange }: any) => (
+  AgentStrategy: ({
+    onStrategyChange,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/agent-strategy').AgentStrategy
+  >) => (
     <button
       type="button"
       onClick={() =>
@@ -124,11 +177,19 @@ vi.mock('@/app/components/workflow/nodes/_base/components/agent-strategy', () =>
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/mcp-tool-availability', () => ({
-  MCPToolAvailabilityProvider: ({ children }: any) => <div>{children}</div>,
+  MCPToolAvailabilityProvider: ({
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/mcp-tool-availability').MCPToolAvailabilityProvider
+  >) => <div>{children}</div>,
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/memory-config', () => ({
-  default: ({ onChange }: any) => (
+  default: ({
+    onChange,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/memory-config').default
+  >) => (
     <button
       type="button"
       onClick={() =>
@@ -141,8 +202,18 @@ vi.mock('@/app/components/workflow/nodes/_base/components/memory-config', () => 
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/output-vars', () => ({
-  default: ({ children }: any) => <div>{children}</div>,
-  VarItem: ({ name, type, description }: any) => <div>{`${name}:${type}:${description}`}</div>,
+  default: ({
+    children,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/output-vars').default
+  >) => <div>{children}</div>,
+  VarItem: ({
+    name,
+    type,
+    description,
+  }: ComponentProps<
+    typeof import('@/app/components/workflow/nodes/_base/components/output-vars').VarItem
+  >) => <div>{`${name}:${type}:${description}`}</div>,
 }))
 
 vi.mock('@/app/components/workflow/nodes/_base/components/split', () => ({
@@ -246,7 +317,7 @@ const createConfigResult = (
   availableNodesWithParent: [],
   outputSchema: [{ name: 'jsonField', type: 'String', description: 'json output' }],
   handleMemoryChange: vi.fn(),
-  isChatMode: true,
+  isChatflow: true,
   ...overrides,
 })
 
@@ -315,7 +386,7 @@ describe('agent path', () => {
 
       unmount()
       const secondRender = render(<ToolIcon id="tool-1" providerName="author/tool-b" />)
-      expect(screen.getByText('app-icon:#fff:B')).toBeInTheDocument()
+      expect(screen.getByText('B')).toBeInTheDocument()
       expect(screen.getByText('indicator:warning')).toBeInTheDocument()
 
       mockBuiltInTools = undefined
@@ -376,7 +447,8 @@ describe('agent path', () => {
 
 vi.mock('@tanstack/react-query', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@tanstack/react-query')>()
-  return {
+  const { mockConsoleOperationHooks } = await import('@/test/console/operation-hooks')
+  const reactQuery = {
     ...actual,
     useQuery: (options: {
       queryKey: OperationKey<
@@ -395,5 +467,11 @@ vi.mock('@tanstack/react-query', async (importOriginal) => {
       if (modelType === ModelTypeEnum.textEmbedding) return { data: mockTextEmbeddingModels }
       return { data: mockTtsModels }
     },
-  }
+  } as typeof actual
+  return mockConsoleOperationHooks(reactQuery, {
+    'workspaces.current.tools.builtin.get': () => ({ data: mockBuiltInTools }),
+    'workspaces.current.tools.api.get': () => ({ data: mockCustomTools }),
+    'workspaces.current.tools.workflow.get': () => ({ data: mockWorkflowTools }),
+    'workspaces.current.tools.mcp.get': () => ({ data: mockMcpTools }),
+  })
 })

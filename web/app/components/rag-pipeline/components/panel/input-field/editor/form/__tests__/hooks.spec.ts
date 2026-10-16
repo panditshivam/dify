@@ -3,17 +3,20 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 import { PipelineInputVarType } from '@/models/pipeline'
 import { useConfigurations, useHiddenConfigurations, useHiddenFieldNames } from '../hooks'
 
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const { mockConsoleOperationHooks } = await import('@/test/console/operation-hooks')
+  return mockConsoleOperationHooks(await importOriginal(), {
+    'files.upload.get': () => ({ data: {} }),
+  })
+})
+
 vi.mock('@/app/components/base/file-uploader/hooks', () => ({
-  useFileSizeLimit: () => ({
+  getFileSizeLimit: () => ({
     imgSizeLimit: 10 * 1024 * 1024,
     docSizeLimit: 15 * 1024 * 1024,
     audioSizeLimit: 50 * 1024 * 1024,
     videoSizeLimit: 100 * 1024 * 1024,
   }),
-}))
-
-vi.mock('@/service/use-common', () => ({
-  useFileUploadConfig: () => ({ data: {} }),
 }))
 
 vi.mock('@/app/components/workflow/constants', () => ({

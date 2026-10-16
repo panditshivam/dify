@@ -8,6 +8,16 @@ export type SimpleResultResponse = {
   result: string
 }
 
+export type ErrorResponse = {
+  code: string
+  details?: {
+    [key: string]: unknown
+  }
+  message: string
+  params?: string
+  status: number
+}
+
 export type SimpleResultMessageResponse = {
   message: string
   result: string
@@ -24,9 +34,10 @@ export type PostRefreshTokenData = {
 }
 
 export type PostRefreshTokenErrors = {
-  400: unknown
-  401: SimpleResultMessageResponse
-  403: unknown
+  400: ErrorResponse
+  401: SimpleResultMessageResponse | ErrorResponse
+  403: ErrorResponse
+  default: ErrorResponse
 }
 
 export type PostRefreshTokenError = PostRefreshTokenErrors[keyof PostRefreshTokenErrors]

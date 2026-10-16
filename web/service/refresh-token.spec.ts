@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/client'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 vi.mock('@/config', () => ({
@@ -168,14 +169,19 @@ describe('refreshAccessTokenOrReLogin', () => {
     expect(vi.getTimerCount()).toBe(0)
   })
 
-  it.each([401, 403, 500])(
-    'rejects HTTP %s without retrying or stranding later callers',
+  it.each([400, 401, 403, 500, 503])(
+    'rejects HTTP %s as ORPCError without retrying or stranding later callers',
     async (status) => {
       const refresh = await loadTab()
-      const response = new Response(null, { status })
+      const response = Response.json(
+        { code: 'refresh_failed', message: 'Refresh failed' },
+        { status },
+      )
       fetchMock.mockResolvedValueOnce(response)
 
-      await expect(refresh(10000)).rejects.toBe(response)
+      const error = await refresh(10000).catch((error: unknown) => error)
+      expect(error).toBeInstanceOf(ORPCError)
+      expect(error).toMatchObject({ code: 'refresh_failed', message: 'Refresh failed', status })
       expect(fetchMock).toHaveBeenCalledOnce()
       expect(vi.getTimerCount()).toBe(0)
 
@@ -193,7 +199,7 @@ describe('refreshAccessTokenOrReLogin', () => {
     fetchMock.mockResolvedValueOnce(response)
     fetchMock.mockResolvedValueOnce(new Response())
 
-    const first = expect(firstTab(10000)).rejects.toBe(response)
+    const first = expect(firstTab(10000)).rejects.toMatchObject({ status: 500 })
     const second = secondTab(10000)
     await Promise.all([first, second])
     expect(fetchMock).toHaveBeenCalledTimes(2)

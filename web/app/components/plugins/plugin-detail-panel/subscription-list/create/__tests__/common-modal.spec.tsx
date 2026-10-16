@@ -128,7 +128,7 @@ vi.mock('@/service/use-triggers', () => ({
   }),
 }))
 
-const mockParsePluginErrorMessage = vi.fn().mockResolvedValue(null)
+const mockParsePluginErrorMessage = vi.fn().mockReturnValue(null)
 vi.mock('@/utils/error-parser', () => ({
   parsePluginErrorMessage: (...args: unknown[]) => mockParsePluginErrorMessage(...args),
 }))
@@ -251,6 +251,7 @@ vi.mock('@/app/components/base/form/components/base', async () => {
 
 vi.mock('@/app/components/base/encrypted-bottom', () => ({
   EncryptedBottom: () => <div data-testid="encrypted-bottom">Encrypted</div>,
+  EncryptedFooter: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }))
 
 vi.mock('../../log-viewer', () => ({
@@ -294,7 +295,7 @@ describe('CommonCreateModal', () => {
     })
     setMockGetFormReturnsNull(false)
     setMockFormValidation(true, true, true) // All forms validated by default
-    mockParsePluginErrorMessage.mockResolvedValue(null)
+    mockParsePluginErrorMessage.mockReturnValue(null)
   })
 
   afterEach(() => {
@@ -533,7 +534,7 @@ describe('CommonCreateModal', () => {
 
       render(<CommonCreateModal {...defaultProps} />)
 
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
@@ -726,7 +727,7 @@ describe('CommonCreateModal', () => {
       fireEvent.click(screen.getByTestId('modal-confirm'))
 
       // Verify the modal is still rendered after error
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
 
     it('should call refetch and onClose on successful create', async () => {
@@ -746,7 +747,7 @@ describe('CommonCreateModal', () => {
       )
 
       // Verify component renders with builder
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
@@ -1099,19 +1100,19 @@ describe('CommonCreateModal', () => {
     it('should use md size for Manual method', () => {
       render(<CommonCreateModal {...defaultProps} createType={SupportedCreationMethods.MANUAL} />)
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-size', 'md')
+      expect(screen.getByRole('dialog')).toHaveClass('w-160')
     })
 
     it('should use sm size for API Key method', () => {
       render(<CommonCreateModal {...defaultProps} createType={SupportedCreationMethods.APIKEY} />)
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-size', 'sm')
+      expect(screen.getByRole('dialog')).not.toHaveClass('w-160')
     })
 
     it('should use sm size for OAuth method', () => {
       render(<CommonCreateModal {...defaultProps} createType={SupportedCreationMethods.OAUTH} />)
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-size', 'sm')
+      expect(screen.getByRole('dialog')).not.toHaveClass('w-160')
     })
   })
 
@@ -1222,7 +1223,7 @@ describe('CommonCreateModal', () => {
 
   describe('Error Message Parsing', () => {
     it('should use parsed error message when available for verify error', async () => {
-      mockParsePluginErrorMessage.mockResolvedValue('Custom parsed error')
+      mockParsePluginErrorMessage.mockReturnValue('Custom parsed error')
 
       const detailWithCredentials = createMockPluginDetail({
         declaration: {
@@ -1262,7 +1263,7 @@ describe('CommonCreateModal', () => {
     })
 
     it('should use parsed error message when available for build error', async () => {
-      mockParsePluginErrorMessage.mockResolvedValue('Custom build error')
+      mockParsePluginErrorMessage.mockReturnValue('Custom build error')
 
       const builder = createMockSubscriptionBuilder()
       mockBuildSubscription.mockImplementation((params, { onError }) => {
@@ -1292,7 +1293,7 @@ describe('CommonCreateModal', () => {
     })
 
     it('should use fallback error message when parsePluginErrorMessage returns null', async () => {
-      mockParsePluginErrorMessage.mockResolvedValue(null)
+      mockParsePluginErrorMessage.mockReturnValue(null)
 
       const builder = createMockSubscriptionBuilder()
       mockBuildSubscription.mockImplementation((params, { onError }) => {
@@ -1318,7 +1319,7 @@ describe('CommonCreateModal', () => {
     })
 
     it('should use parsed error message for update builder error', async () => {
-      mockParsePluginErrorMessage.mockResolvedValue('Custom update error')
+      mockParsePluginErrorMessage.mockReturnValue('Custom update error')
 
       const detailWithManualSchema = createMockPluginDetail({
         declaration: {
@@ -1384,7 +1385,7 @@ describe('CommonCreateModal', () => {
       )
 
       // Component should render without errors even when getForm returns null
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
@@ -2046,7 +2047,7 @@ describe('CommonCreateModal', () => {
 
       render(<CommonCreateModal {...defaultProps} />)
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-disabled', 'true')
+      expect(screen.getByTestId('modal-confirm')).toBeDisabled()
     })
 
     it('should show disabled state when building', () => {
@@ -2061,7 +2062,7 @@ describe('CommonCreateModal', () => {
         />,
       )
 
-      expect(screen.getByTestId('modal')).toHaveAttribute('data-disabled', 'true')
+      expect(screen.getByTestId('modal-confirm')).toBeDisabled()
     })
   })
 
@@ -2158,7 +2159,7 @@ describe('CommonCreateModal', () => {
       )
 
       // Component should render without errors
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
@@ -2186,7 +2187,7 @@ describe('CommonCreateModal', () => {
       fireEvent.click(screen.getByTestId('modal-confirm'))
 
       // Should still attempt to verify
-      expect(screen.getByTestId('modal')).toBeInTheDocument()
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
     })
   })
 
