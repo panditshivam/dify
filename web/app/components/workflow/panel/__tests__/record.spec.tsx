@@ -21,10 +21,12 @@ vi.mock('../../hooks/use-workflow-update', async (importOriginal) => {
 
 vi.mock('@/app/components/workflow/run', () => ({
   default: ({
+    appId,
     runDetailUrl,
     tracingListUrl,
     getResultCallback,
   }: {
+    appId?: string
     runDetailUrl: string
     tracingListUrl: string
     getResultCallback: (res: WorkflowRunDetailResponse) => void
@@ -32,6 +34,7 @@ vi.mock('@/app/components/workflow/run', () => ({
     latestGetResultCallback = getResultCallback
     return (
       <div
+        data-app-id={appId}
         data-run-detail-url={runDetailUrl}
         data-testid="run"
         data-tracing-list-url={tracingListUrl}
@@ -74,6 +77,7 @@ describe('Record', () => {
     }))
 
     renderWorkflowComponent(<Record />, {
+      resource: { kind: 'app', appId: 'history-app', mode: 'workflow' },
       initialStoreState: {
         historyWorkflowData: {
           id: 'run-1',
@@ -87,6 +91,7 @@ describe('Record', () => {
     })
 
     expect(screen.getByText(/Test Run \(\d{2}:\d{2}:\d{2}( [AP]M)?\)/)).toBeInTheDocument()
+    expect(screen.getByTestId('run')).toHaveAttribute('data-app-id', 'history-app')
     expect(screen.getByTestId('run')).toHaveAttribute('data-run-detail-url', '/runs/run-1')
     expect(screen.getByTestId('run')).toHaveAttribute('data-tracing-list-url', '/traces/run-1')
     expect(getWorkflowRunAndTraceUrl).toHaveBeenCalledTimes(2)
